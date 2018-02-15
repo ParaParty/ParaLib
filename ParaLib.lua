@@ -3,7 +3,8 @@
 Many useful lib:Vector,Blocks,etc.
 by Hyt
 ]]--
-ParaLib = {};
+ParaLib = {SBlockList = {}};
+ParaLib.__index = ParaLib;
 function main(entity)
     script = blocks.getscript(19200,1,19200);
     script.ParaLib = ParaLib;
@@ -33,6 +34,15 @@ function Vector:Multiply(num)
     self.y  = self.y * num;
     self.z  = self.z * num;
 end
+
+--turn the vector into string
+function Vector:ToString()
+    return self.x.." "..self.y.." "..self.z;
+end
+--turn the vectot into parm
+function Vector:ToParm()
+    return self.x, self.y, self.z;
+end
 --Newvector
 function ParaLib:NewVector(x,y,z)
     local result = {};
@@ -58,15 +68,41 @@ SBlock = {Position = {0, 0, 0}, Id = 0, Data = 0};
 SBlock.__index = SBlock;
 --create a smart block
 function ParaLib:CreateSBlock(x,y,z)
-    local newBlock = {};
-    setmetatable(newBlock, SBlock);
+    local newBlock = {__index = SBlock};
+    --初始化一堆信息
     newBlock.Position = ParaLib.NewVector(x,y,z);
-    newBlock.Id = BlockEngine:GetBlockId(x,y,z);
-    newBlock.Data = BlockEngine:GetBlockData(x,y,z);
+    --注册到表里
+    table.insert( ParaLib.SBlockList,newBlock);
+    return newBlock;
 end
 
---移动
-function SBlock:TranslateToRelative(x,y,z)
-    cmd("/translate ~ ~ ~ to "..x.." "..y.." "..z);
+--获取Id
+function SBlock:GetId()
+    return BlockEngine:GetBlockId(self.Position:ToParm());
+end
+
+--获取Data
+function SBlock:GetData()
+    return BlockEngine:GetBlockData(self.Position:ToParm());
+end
+
+--Move a Block relatively
+function SBlock:SimpleMoveRelative(x,y,z,newData)
+    cmd("/translate ~ ~ ~ to "..ParaLib:NewVector(x,y,z):ToString());
     self.Position = self.Position + NewVector(x,y,z);
+    if not newData then
+        BlockEngine:SetBlockData(self.Position:ToParm(),newData,0);
+    end
+end
+
+--Move a Block absolately
+function SBlock:SimpleMoveAbsolate(x,y,z,newData)
+    self:SimpleMoveRelative(ParaLib:NewVector( x,y,z) - self.Position,newData);
+end
+
+SBlockGroup = {};
+SBlockGroup.__index = SBlockGroup;
+--Move all SBlock in the group
+function SBlockGroup:SimpleMoveGroupRelative(to)
+
 end

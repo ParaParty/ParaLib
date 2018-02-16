@@ -3,7 +3,7 @@
 Many useful lib:Vector,Blocks,etc.
 by Hyt
 ]]--
-ParaLib = {SBlockList = {}};
+ParaLib = {SBlockList = {},Vector = Vector,SBlock = SBlock,SBlockGroup = SBlockGroup};
 ParaLib.__index = ParaLib;
 function main(entity)
     script = blocks.getscript(19200,1,19200);
@@ -45,8 +45,8 @@ function Vector:ToParm()
 end
 --Newvector
 function ParaLib:NewVector(x,y,z)
-    local result = {};
-    setmetatable(result,Vector);
+    local result = {__index = Vector};
+    --assign the value
     result.x = x;
     result.y = y;
     result.z = z;
@@ -70,9 +70,9 @@ SBlock.__index = SBlock;
 function ParaLib:CreateSBlock(x,y,z)
     local newBlock = {__index = SBlock};
     --初始化一堆信息
-    newBlock.Position = ParaLib.NewVector(x,y,z);
+    newBlock.Position = ParaLib:NewVector(x,y,z);
     --注册到表里
-    table.insert( ParaLib.SBlockList,newBlock);
+    table.insert(ParaLib.SBlockList,newBlock);
     return newBlock;
 end
 
